@@ -13,6 +13,10 @@ var cloud_parts = [];
 const nx = 100;
 const ny = 30;
 const nz = 30;
+										   
+var pext = .5;
+var phum = .5;
+var pact = .5;
 
 class Voxel {
    constructor(humid, activate, mat) {
@@ -30,12 +34,19 @@ var boundary_Vox = new Voxel(false,false);
 
 const update_humid = function (i, j ,k) {
    let pt = get_Voxel(i, j, k);
-   pt.next_hum = (pt.hum && !pt.act);
+   var prob = Math.random();
+   pt.next_hum = (pt.hum && !pt.act) || (prob < phum);
 };
 
 const update_cld = function (i, j, k) {
    let pt = get_Voxel(i, j ,k);
    pt.next_cld = (pt.cld || pt.act);
+	if (pt.next_cld) {
+		var prob = Math.random();
+		if (prob < pext) {
+			pt.next_cld = false;
+		}
+	}
 };
 
 const get_Voxel = function (i, j, k) {
@@ -55,9 +66,21 @@ const f_act = function (i, j, k) {
 }
 
 const update_act = function (i, j, k) {
-   get_Voxel(i,j,k).next_act = (!get_Voxel(i, j, k).act && get_Voxel(i,j,k).hum && f_act(i,j,k));
+   var prob = Math.random();
+   get_Voxel(i,j,k).next_act = (!get_Voxel(i, j, k).act && get_Voxel(i,j,k).hum && f_act(i,j,k)) || (prob < pact);
 }
 
+const update_voxel = function (pt) {
+	pt.act = pt.next_act;
+	pt.cld = pt.next_cld;
+	pt.hum = pt.next_hum;
+	if (pt.cld == false) {
+	   pt.part.material.opacity = 0;
+	} else {
+	   
+	   pt.part.material.opacity = 0.02;
+	}
+}
 
 const update_all = function () {
    for (let k = 0; k < nz; k++) {
@@ -71,15 +94,7 @@ const update_all = function () {
    }
    for (let i = 0; i < cloud_parts.length; i++) {
       let pt = cloud_parts[i];
-      pt.act = pt.next_act;
-      pt.cld = pt.next_cld;
-      pt.hum = pt.next_hum;
-      if (pt.cld == false) {
-         pt.part.material.opacity = 0;
-      } else {
-         pt.part.material.opacity = 0.02;
-         
-      }
+	  update_voxel(pt);
    }
 }
 

@@ -10,13 +10,13 @@ const box_geo = new THREE.BoxGeometry(.1, .1, .1);
 const material = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
 var cloud_parts = [];
 
-const nx = 100;
-const ny = 30;
-const nz = 30;
+const nx = 75;
+const ny = 50;
+const nz = 50;
 										   
-var pext = .5;
-var phum = .5;
-var pact = .5;
+var pext = 0.8;//.5;
+var phum = 0.2;//.5;
+var pact = 0.4;//.5;
 
 class Voxel {
    constructor(humid, activate, mat) {
@@ -56,6 +56,66 @@ const get_Voxel = function (i, j, k) {
    return cloud_parts[(nx*ny*k) + (nx*j) + i];
 }
 
+
+
+// Velocity function-- said to be piecewise-linear
+const velocity = function(z) {
+
+   if (z >= 25) {
+      return Math.round(0.5* z);;
+   }
+
+   if (z >= 17) {   
+      return Math.round(0.4 * z);
+   }
+
+   if (z >= 12) {   
+      return Math.round(0.3 * z);
+   }
+
+   if (z >= 9) {   
+      return Math.round(0.2 * z);
+   }
+
+   return -Math.round(0.2 * z);
+
+}
+
+
+const advection_cld = function (i, j, k) {
+   let pt = get_Voxel(i, j, k);
+
+   if (i - velocity(j) > 0) {
+      pt.cld = get_Voxel(i - velocity(j), j, k).next_cld;
+   }
+   else {
+      pt.cld = 0;
+   }  
+};
+
+const advection_hum = function (i, j, k) {
+   let pt = get_Voxel(i, j, k);
+
+   if (i - velocity(j) > 0) {
+      pt.hum = get_Voxel(i - velocity(j), j, k).next_hum;
+   }
+   else {
+      pt.hum = 0;
+   }  
+};
+
+const advection_act = function (i, j, k) {
+   let pt = get_Voxel(i, j, k);
+
+   if (i - velocity(j) > 0) {
+      pt.act = get_Voxel(i - velocity(j), j, k).next_act;
+   }
+   else {
+      pt.act = 0;
+   }  
+};
+
+
 const f_act = function (i, j, k) {
    return ((get_Voxel(i+1, j, k).act) || (get_Voxel(i, j+1, k).act) || 
       (get_Voxel(i, j, k+1).act) || (get_Voxel(i-1, j, k).act) ||
@@ -71,14 +131,15 @@ const update_act = function (i, j, k) {
 }
 
 const update_voxel = function (pt) {
-	pt.act = pt.next_act;
-	pt.cld = pt.next_cld;
-	pt.hum = pt.next_hum;
+	// pt.act = pt.next_act;
+	// pt.cld = pt.next_cld;
+	// pt.hum = pt.next_hum;
 	if (pt.cld == false) {
 	   pt.part.material.opacity = 0;
 	} else {
 	   
 	   pt.part.material.opacity = 0.02;
+
 	}
 }
 
@@ -89,6 +150,9 @@ const update_all = function () {
             update_humid(i, j, k);
             update_act(i,j,k);
             update_cld(i,j,k);
+            advection_cld(i,j,k);
+            advection_act(i,j,k);
+            advection_hum(i,j,k);
          }
       }
    }

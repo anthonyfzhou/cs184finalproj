@@ -14,9 +14,9 @@ const nx = 75;
 const ny = 50;
 const nz = 50;
 										   
-var pext = 0.8;//.5;
-var phum = 0.2;//.5;
-var pact = 0.4;//.5;
+var pext = 0.9;//.5;
+var phum = 0.1;//.5;
+var pact = 0.001;//.5;
 
 class Voxel {
    constructor(humid, activate, mat) {
@@ -27,6 +27,21 @@ class Voxel {
       this.act = activate;
       this.next_act = activate;
       this.part = new THREE.Mesh(box_geo, mat);
+      this.phum = 0;
+      this.pext = 0;
+      this.pact = 0;
+   }
+}
+
+class Ellipse {
+   constructor(a, b, c, x_pos, y_pos, z_pos) {
+      //a corresponds to x, b corresponds to y, c corresponds to z
+      this.a = a;
+      this.b = b;
+      this.c = c;
+      this.x_pos = x_pos;
+      this.y_pos = y_pos;
+      this.z_pos = z_pos;
    }
 }
 
@@ -35,7 +50,7 @@ var boundary_Vox = new Voxel(false,false);
 const update_humid = function (i, j ,k) {
    let pt = get_Voxel(i, j, k);
    var prob = Math.random();
-   pt.next_hum = (pt.hum && !pt.act) || (prob < phum);
+   pt.next_hum = (pt.hum && !pt.act) || (prob < pt.phum);
 };
 
 const update_cld = function (i, j, k) {
@@ -43,7 +58,7 @@ const update_cld = function (i, j, k) {
    pt.next_cld = (pt.cld || pt.act);
 	if (pt.next_cld) {
 		var prob = Math.random();
-		if (prob < pext) {
+		if (prob > pt.pext) {
 			pt.next_cld = false;
 		}
 	}
@@ -60,6 +75,8 @@ const get_Voxel = function (i, j, k) {
 
 // Velocity function-- said to be piecewise-linear
 const velocity = function(z) {
+
+   return Math.round(0.04*z);
 
    if (z >= 25) {
       return Math.round(0.5* z);;
@@ -127,7 +144,7 @@ const f_act = function (i, j, k) {
 
 const update_act = function (i, j, k) {
    var prob = Math.random();
-   get_Voxel(i,j,k).next_act = (!get_Voxel(i, j, k).act && get_Voxel(i,j,k).hum && f_act(i,j,k)) || (prob < pact);
+   get_Voxel(i,j,k).next_act = (!get_Voxel(i, j, k).act && get_Voxel(i,j,k).hum && f_act(i,j,k)) || (prob < get_Voxel(i,j,k).pact);
 }
 
 const update_voxel = function (pt) {
@@ -138,7 +155,7 @@ const update_voxel = function (pt) {
 	   pt.part.material.opacity = 0;
 	} else {
 	   
-	   pt.part.material.opacity = 0.02;
+	   pt.part.material.opacity = 0.05;
 
 	}
 }
@@ -157,10 +174,20 @@ const update_all = function () {
       }
    }
    for (let i = 0; i < cloud_parts.length; i++) {
-      let pt = cloud_parts[i];
+     let pt = cloud_parts[i];
 	  update_voxel(pt);
    }
 }
+
+const get_weight = function(e, i, j, k) {
+   let rad = ((Math.pow(((i - e.x_pos)/e.a), 2)) + (Math.pow(((j - e.y_pos)/e.b), 2)) + (Math.pow(((k - e.z_pos)/e.c), 2)));
+   if (rad <= 1) {
+      return Math.sqrt(1-rad);
+   } else {
+      return 0;
+   }
+}
+
 
 
 
@@ -175,40 +202,52 @@ const x_offset = -0.1*nx/2;
 const y_offset = -0.1*ny/2;
 const z_offset = -0.1*nz/2;
 
+var num_ellipses = 1;
+var all_ellipses = [];
+
+for (let i = 0; i < num_ellipses; i++) {
+   all_ellipses.push(new Ellipse(nx/2, ny/2, nz/2, nx/2,ny/2,nz/2));
+}
+
+
+
 
 for (let k = 0; k < nz; k++) {
    for (let j = 0; j < ny; j++) {
       for (let i = 0; i < nx; i++) {
-         let hum = Math.random();
-         if (hum > 0.7) {
-            hum = true;
-         } else {
-            hum = false;
-         }
-         let act = Math.random();
-         if (act > 0.97) {
-            act = true;
-         } else {
-            act = false;
-         }
+         hum = 0;
+         act = 0;
          let mat = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
          mat.transparent = true;
          let vox = new Voxel(hum, act, mat);
          vox.part.position.set(x_offset + 0.1*i, y_offset + 0.1*j, z_offset + 0.1*k);
          vox.part.material.opacity = 0;
 
+         for (let e = 0; e < num_ellipses; e++) {
+            let wt = get_weight(all_ellipses[e], i, j, k);
+            if (pext*wt > vox.pext) {
+               vox.pext = pext*wt;
+               vox.phum = phum*wt;
+               vox.pact = pact*wt;
+            }
+         }
+
+
          cloud_parts.push(vox);
       }
    }
 }
 
+
+
+
 for (let i = 0; i < cloud_parts.length; i++) {
    scene.add(cloud_parts[i].part);
 }
 
-camera.position.z = nz/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)));
-camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)));
-camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)));;
+camera.position.z = nz/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/2;
+camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
+camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
 camera.lookAt(0,0,0);
 
 const animate = function () {

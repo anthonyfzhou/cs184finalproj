@@ -1,0 +1,84 @@
+<head>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+	<div>
+		<h1 id="title" align="center">Cloud Sim</h1>
+		<div align="center">Project Members: Sayan Das, Andrew Wang, Mohak Jain, Anthony Zhou</div>
+
+		<h2 align="center">Project Summary</h2>
+		<div class="content" align="center">
+			We want to create a model that realistically models, renders, and simulates cumulus cloud formation in an animation. Building onto the smoke simulations that were done in previous years, we want to apply that to cloud formation and motion; Our vision is starting from particles of water, and then simulating the condensation and scattering effects that result in what we see as clouds.
+		</div>
+
+		<h2 align="center">Project Description</h2>
+		<div class="content" align="center">
+			The problem we are trying to solve is the realistic simulation of clouds. Realistic cloud simulation is an important part of synthesizing accurate outdoor scenes in movies, games, and more. In our case, we will be specifically focusing on simulating the big fluffy cumulus clouds; however, if time permits, we may attempt to simulate other cloud structures.
+		</div>
+
+
+		<div class="content" align="center">
+			The challenges of realistic cloud simulation include, but are not limited to, the particle dynamics governing the formation of clouds, computing the coloring of the clouds by analyzing how the particles interact with incoming light, and the particle dynamics governing the motion of clouds. In order to solve these problems, we have consulted research papers regarding cloud simulation and particle physics. 
+
+		</div>
+
+		<h2 align="center">Goals and Deliverables</h2>
+		<div class="content" align="center">
+			We plan to create a video of our cloud forming, hopefully in real time. Cloud formation is just a special type of fluid dynamics, and since many previous projects have created simulations with fluid dynamics, we are confident we can also. The clothsim project and the lecture on physical simulation (especially the particle simulation part) have given us a good starting point for the project. For now, we will use basic shaders to color the clouds, but we will consider using volumetric scattering if we have time.
+		</div>
+
+		<div class="content" align="center">
+			In order to quantify the quality of our simulation, we plan to compare our cloud formation process to several real videos of cloud formation. We will focus on how the particles adhere/repel each other over time and the overall cloud shape, and then secondarily focus on the texture and color of the cloud. Throughout this project, we hope to better understand how clouds actually form, and how video games and simulator programs render clouds.
+		</div>
+
+		<div class="content" align="center">
+			The focus of our project is firstly the particle simulation and secondarily the appearance of the cloud. For a successful project, we hope to have our particle simulation working with the correct fluid dynamics and have a substance that looks somewhat like a cloud, using a rudimentary shader. We aren’t sure how hard it may be to implement the physics, so we wouldn’t have to focus that much on the shader if things went wrong. If things go smoothly, we would like to improve our shader to the point that the cloud appears fluffy and has depth by considering volumetric scattering.
+		</div>
+
+		<h2 align="center">Schedule</h2>
+		<div class="content" align="center">
+			By Week:
+		</div>
+		<div class="content">
+			<ol>
+			  <li>Reading relevant papers and writing an implementation plan.</li>
+			  <li>Simulating the fluid model to accurately depict the cloud itself.</li>
+			  <li>Simulating real-time cloud formation modelling the natural generation of clouds.</li>
+			  <li>Applying a pseudo-physical shader to apply an assumption of volumetric scattering within the cloud.</li>
+			</ol>
+		</div>
+
+		<h2 align="center">Resources</h2>
+		<div class="content" align="center">
+			We’re interested in getting feedback on what platform we should use to code and render this simulation. We’re thinking about Three.JS and WebGL to do our simulation for now.
+		</div>
+
+		<div class="content" align="center">
+			Below is a host of relevant links to resources and videos and articles that we consulted in our process so far and will remain relevant moving forward.
+		</div>
+
+		<div class="content" align="center">
+
+			<ul>
+			  	<li>
+			  			<a href="https://www.microsoft.com/en-us/research/publication/light-reflection-function-for-simulation-of-clouds-and-dusty-surfaces/">https://www.microsoft.com/en-us/research/publication/light-reflection-function-for-simulation-of-clouds-and-dusty-surfaces/</a>
+				</li>
+			  	<li>
+			  		<a href="https://www.sciencedirect.com/science/article/pii/S2468502X17300013">https://www.sciencedirect.com/science/article/pii/S2468502X17300013</a>
+				</li>
+			  	<li>
+			  		<a href="https://www.youtube.com/watch?v=4QOcCGI6xOU">https://www.youtube.com/watch?v=4QOcCGI6xOU</a>
+				</li>
+				<li>
+			  		<a href="https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018JD028803">https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018JD028803</a>
+				</li>
+			</ul>
+
+		</div>
+
+
+
+
+	
+	</div>
+</body>

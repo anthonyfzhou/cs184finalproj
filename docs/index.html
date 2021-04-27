@@ -3,74 +3,61 @@
 </head>
 <body>
 	<div>
-		<h1 id="title" align="center">Cloud Sim</h1>
+		<h1 id="title" align="center">Cloud Sim Milestone 1</h1>
 		<div align="center">Project Members: Sayan Das, Andrew Wang, Mohak Jain, Anthony Zhou</div>
 
-		<h2 align="center">Project Summary</h2>
+		<h2 align="center">Milestone Status Report</h2>
 		<div class="content" align="center">
-			We want to create a model that realistically models, renders, and simulates cumulus cloud formation in an animation. Building onto the smoke simulations that were done in previous years, we want to apply that to cloud formation and motion; Our vision is starting from particles of water, and then simulating the condensation and scattering effects that result in what we see as clouds.
-		</div>
-
-		<h2 align="center">Project Description</h2>
-		<div class="content" align="center">
-			The problem we are trying to solve is the realistic simulation of clouds. Realistic cloud simulation is an important part of synthesizing accurate outdoor scenes in movies, games, and more. In our case, we will be specifically focusing on simulating the big fluffy cumulus clouds; however, if time permits, we may attempt to simulate other cloud structures.
-		</div>
-
-
-		<div class="content" align="center">
-			The challenges of realistic cloud simulation include, but are not limited to, the particle dynamics governing the formation of clouds, computing the coloring of the clouds by analyzing how the particles interact with incoming light, and the particle dynamics governing the motion of clouds. In order to solve these problems, we have consulted research papers regarding cloud simulation and particle physics. 
-
-		</div>
-
-		<h2 align="center">Goals and Deliverables</h2>
-		<div class="content" align="center">
-			We plan to create a video of our cloud forming, hopefully in real time. Cloud formation is just a special type of fluid dynamics, and since many previous projects have created simulations with fluid dynamics, we are confident we can also. The clothsim project and the lecture on physical simulation (especially the particle simulation part) have given us a good starting point for the project. For now, we will use basic shaders to color the clouds, but we will consider using volumetric scattering if we have time.
+			We set out to create a model that realistically models, renders, and simulates cumulus cloud formation in an animation. Building onto the smoke simulations that were done in previous years, we want to apply that to cloud formation and motion. Our initial vision was to start from particles of water, and then simulate the condensation and scattering effects that result in what we see as clouds. In this method, our cloud formation would be a particle-based simulation adhering to physical principles such as the aforementioned condensation process of air to water vapor.
 		</div>
 
 		<div class="content" align="center">
-			In order to quantify the quality of our simulation, we plan to compare our cloud formation process to several real videos of cloud formation. We will focus on how the particles adhere/repel each other over time and the overall cloud shape, and then secondarily focus on the texture and color of the cloud. Throughout this project, we hope to better understand how clouds actually form, and how video games and simulator programs render clouds.
+			However, we decided for the sake of simplicity to move away from a totally physical approach and instead settled on a different model. Inspired by a 2000 paper from the University of Tokyo, we began implementing a loosely procedural model that operates under physical approximations. This paper proceeds through cloud generation in two major steps: simulation and rendering. For this milestone, we implement the first half, simulation.
+		</div>
+
+
+		<div class="content" align="center">
+			This paper uses three variables, each of which is determined procedurally for each voxel in a rendering space: the presence of a cloud (cld), the humidity (hum), and the phase transition (act) as a determination of whether a cloud is rendered or not in the voxel. These three variables are booleans and, while cloud starts as being FALSE for all of our voxels, the other two variables are assigned randomly. The relationships of these variables in a voxel at each time step eventually changes until we get to a completely rendered cloud. Graphically, when a voxel’s cloud boolean is true we turn it opaque, and when it isn’t we turn it totally transparent.
 		</div>
 
 		<div class="content" align="center">
-			The focus of our project is firstly the particle simulation and secondarily the appearance of the cloud. For a successful project, we hope to have our particle simulation working with the correct fluid dynamics and have a substance that looks somewhat like a cloud, using a rudimentary shader. We aren’t sure how hard it may be to implement the physics, so we wouldn’t have to focus that much on the shader if things went wrong. If things go smoothly, we would like to improve our shader to the point that the cloud appears fluffy and has depth by considering volumetric scattering.
-		</div>
-
-		<h2 align="center">Schedule</h2>
-		<div class="content" align="center">
-			By Week:
-		</div>
-		<div class="content">
-			<ol>
-			  <li>Reading relevant papers and writing an implementation plan.</li>
-			  <li>Simulating the fluid model to accurately depict the cloud itself.</li>
-			  <li>Simulating real-time cloud formation modelling the natural generation of clouds.</li>
-			  <li>Applying a pseudo-physical shader to apply an assumption of volumetric scattering within the cloud.</li>
-			</ol>
-		</div>
-
-		<h2 align="center">Resources</h2>
-		<div class="content" align="center">
-			We’re interested in getting feedback on what platform we should use to code and render this simulation. We’re thinking about Three.JS and WebGL to do our simulation for now.
+			The relationships at each timestep between the three booleans is as follows:
 		</div>
 
 		<div class="content" align="center">
-			Below is a host of relevant links to resources and videos and articles that we consulted in our process so far and will remain relevant moving forward.
+			<img src="./images/equations.png" align="center">
 		</div>
 
+		<div class="content" align="center">
+			Of course, at this point we eventually hit a steady state we end up essentially with a completely cloud-filled space. As such we add the effects of advection and extinction. Extinction handles the problem that once cld is assigned 1, it never stops. This means that once a voxel becomes a cloud it never stops being a cloud. We implemented an extinction probability the animator can specify, which is the probability that any voxel with cld == TRUE turns to cld == FALSE. This allows for a continually evolving cloud shape to be rendered.
+		</div>
+
+		<div class="content" align="center">
+			Advection refers to the effect of wind. We implemented a piecewise-linear function for wind velocity as a function of the z-coordinate. We write new transition rules for the three booleans now dependent on the booleans of the voxel some distance away as determined by the wind velocity. This gave us some neatly moving clouds, and had an especially nice effect when implemented alongside extinction.
+		</div>
+
+		<div class="content" align="center">
+			In order to simulate a realistic shape for clouds, we use ellipsoids to govern areas where clouds are most likely to form. In the model, this just means parameters like cloud extinction and cloud reformation vary relative to the location of a certain point in the designated ellipsoid. For this milestone, we have assigned a single ellipsoid to the simulation space, but in the final submissions, we will generate more ellipsoids for a more realistic animation. 
+		</div>
+
+		<div class="content" align="center">
+			So far, our progress has gone according to plan. In the first two weeks, we have created a simulation that governs the formation of a single, hard-coded cloud in our simulation space. Because we simplified our generation model away from a strictly physical-based one, most of our realism adjustments will occur near the end of the project after we have completed simulating the light sources. 
+		</div>
+
+		<div class="content" align="center">
+			Moving forwards, we expect to spend the next week on completing the realistic lighting of clouds accounting for factors such as light scattering and absorption. Finally, once we have completed realistic lighting, we will adjust our cloud generation parameters to approximate the realistic animation of clouds. 
+			If we have even more time, we may even try to implement a GUI that allows us to toggle the animator-input parameters in real time.
+		</div>
+
+		<h2 align="center">Presentation and Summary Video</h2>
 		<div class="content" align="center">
 
 			<ul>
-			  	<li>
-			  			<a href="https://www.microsoft.com/en-us/research/publication/light-reflection-function-for-simulation-of-clouds-and-dusty-surfaces/">https://www.microsoft.com/en-us/research/publication/light-reflection-function-for-simulation-of-clouds-and-dusty-surfaces/</a>
-				</li>
-			  	<li>
-			  		<a href="https://www.sciencedirect.com/science/article/pii/S2468502X17300013">https://www.sciencedirect.com/science/article/pii/S2468502X17300013</a>
-				</li>
-			  	<li>
-			  		<a href="https://www.youtube.com/watch?v=4QOcCGI6xOU">https://www.youtube.com/watch?v=4QOcCGI6xOU</a>
-				</li>
 				<li>
-			  		<a href="https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018JD028803">https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2018JD028803</a>
+			  			<a href="https://www.youtube.com/watch?v=yV6QB5XOazM">Milestone Video</a>
+				</li>
+			  	<li>
+			  			<a href="https://docs.google.com/presentation/d/1mBnfOM6EvZffId00I2xdKSVQNXr1O2WCHiYGS9otaKM/edit?usp=sharing">Presentation Slides</a>
 				</li>
 			</ul>
 

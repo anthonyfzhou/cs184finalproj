@@ -76,25 +76,25 @@ const get_Voxel = function (i, j, k) {
 // Velocity function-- said to be piecewise-linear
 const velocity = function(z) {
 
-   return Math.round(0.04*z);
+   // return Math.round(0.04*z);
 
    if (z >= 25) {
-      return Math.round(0.5* z);;
+      return Math.round(0.09 * z);;
    }
 
    if (z >= 17) {   
-      return Math.round(0.4 * z);
+      return -Math.round(0.10 * z);
    }
 
    if (z >= 12) {   
-      return Math.round(0.3 * z);
+      return Math.round(0.05 * z);
    }
 
    if (z >= 9) {   
-      return Math.round(0.2 * z);
+      return -Math.round(0.01 * z);
    }
 
-   return -Math.round(0.2 * z);
+   return -Math.round(0.02 * z);
 
 }
 
@@ -155,7 +155,7 @@ const update_voxel = function (pt) {
 	   pt.part.material.opacity = 0;
 	} else {
 	   
-	   pt.part.material.opacity = 0.05;
+	   pt.part.material.opacity = 0.075;
 
 	}
 }
@@ -218,6 +218,8 @@ for (let k = 0; k < nz; k++) {
          hum = 0;
          act = 0;
          let mat = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
+         // TOGGLE THIS FOR PRETTY COLORS!!:
+         // mat.color = new THREE.Color(i/nx, j/ny, k/nz); 
          mat.transparent = true;
          let vox = new Voxel(hum, act, mat);
          vox.part.position.set(x_offset + 0.1*i, y_offset + 0.1*j, z_offset + 0.1*k);
@@ -256,4 +258,4 @@ const animate = function () {
    renderer.render( scene, camera );
 };
 
-setInterval(animate, 300);
+setInterval(animate, 500);

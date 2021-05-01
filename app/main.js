@@ -3,6 +3,7 @@ const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.inner
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
+//renderer.shadowMap.enabled = true;
 document.body.appendChild( renderer.domElement );
 
 // renderer.setClearColor( 0x87ceeb );
@@ -15,15 +16,23 @@ var lightsource = new THREE.DirectionalLight(0xFFFFFF, 10);
     scene.add(lightsource);
 
 
+const plane_geo = new THREE.PlaneGeometry(5, 20, 32 );
+const plane_material = new THREE.MeshBasicMaterial( {color: 0xc2b280, side: THREE.DoubleSide} );
+const plane = new THREE.Mesh( plane_geo, plane_material );
+//plane.receiveShadow = true;
+plane.position.y = -4;
+plane.scale.set(100, 1, 30);
+//scene.add( plane );
+
 
 
 const box_geo = new THREE.BoxGeometry(.1, .1, .1);
 const material = new THREE.MeshLambertMaterial({color: 0xd3d3d3});
 var cloud_parts = [];
 
-const nx = 100;
-const ny = 70;
-const nz = 50;
+const nx = 30;
+const ny = 30;
+const nz = 20;
 										   
 var pext = 0.9;//.5;
 var phum = 0.1;//.5;
@@ -54,9 +63,14 @@ class Voxel {
       this.act = activate;
       this.next_act = activate;
       this.part = new THREE.Mesh(box_geo, mat);
+      //this.part.castShadow = true;
+      //this.part.receiveShadow = true;
       this.phum = 0;
       this.pext = 0;
       this.pact = 0;
+      this.next_phum = 0;
+      this.next_pext = 0;
+      this.next_pact = 0;
       this.density= 0;
    }
 }
@@ -104,7 +118,7 @@ const get_Voxel = function (i, j, k) {
 // Velocity function-- said to be piecewise-linear
 const velocity = function(z) {
 
-   //return Math.round(0.04*z);
+   //return Math.round(0.01*z);
 
    if (z >= 25) {
       return -Math.round(0.01 * z);;
@@ -160,6 +174,21 @@ const advection_act = function (i, j, k) {
    }  
 };
 
+const advection_prob = function (i, j, k) {
+   let pt = get_Voxel(i, j, k);
+
+   if (i - velocity(j) > 0) {
+      pt.next_phum = get_Voxel(i - velocity(j), j, k).phum;
+      pt.next_pact = get_Voxel(i - velocity(j), j, k).pact;
+      pt.next_pext = get_Voxel(i - velocity(j), j, k).pext;
+   }
+   else {
+      pt.next_phum = 0;
+      pt.next_pact = 0;
+      pt.next_pext = 0;
+   }  
+};
+
 
 const f_act = function (i, j, k) {
    return ((get_Voxel(i+1, j, k).act) || (get_Voxel(i, j+1, k).act) || 
@@ -177,6 +206,7 @@ const update_act = function (i, j, k) {
 
 const density_weight = function(i, j, k) {
    let sum = 0;
+   let tsum = 0;
    let i0 = 3;
    let j0 = 3;
    let k0 = 3;
@@ -184,13 +214,15 @@ const density_weight = function(i, j, k) {
       for (let jloop = -j0; jloop <= j0; jloop++) {
          for (let kloop = -k0; kloop <= k0; kloop++) {
             let pt = get_Voxel(i+iloop, j+jloop, k+kloop);
+            let cont = (iloop*iloop + jloop*jloop + kloop*kloop)/(i0*i0 + j0*j0 + k0*k0);
             if (pt.cld == true) {
-               sum += 1;
+               sum += (1-cont);
             }
+            tsum += (1 - cont);
          }
       }
    }
-   sum = sum/((2*i0) + 1)/((2*j0) + 1)/((2*k0) + 1);
+   sum = sum/tsum;
    return sum;
 }
 
@@ -198,12 +230,15 @@ const density_weight = function(i, j, k) {
 const update_voxel = function (i,j,k) {
    let pt = get_Voxel(i,j,k);
 	pt.density = density_weight(i, j, k);
+   pt.phum = pt.next_phum;
+   pt.pact = pt.next_pact;
+   pt.pext = pt.next_pext;
 	/*if (pt.cld == false) {
 	   pt.part.material.opacity = 0;
 	} else {
 	   pt.part.material.opacity = 0.05;
 	}*/
-   pt.part.material.opacity = 0.2*pt.density;
+   pt.part.material.opacity = 0.3*pt.density;
 }
 
 const update_all = function () {
@@ -216,6 +251,7 @@ const update_all = function () {
             advection_cld(i,j,k);
             advection_act(i,j,k);
             advection_hum(i,j,k);
+            advection_prob(i,j,k);
          }
       }
    }
@@ -255,8 +291,18 @@ const z_offset = -0.1*nz/2;
 var num_ellipses = 1;
 var all_ellipses = [];
 
+var min_a = nx/4;
+var min_b = ny/4;
+var min_c = nz/4;
+
+
+var max_a = nx/2;
+var max_b = ny/2;
+var max_c = nz/2;
 for (let i = 0; i < num_ellipses; i++) {
-   all_ellipses.push(new Ellipse(nx/2, ny/2, nz/2, nx/2,ny/2,nz/2));
+   all_ellipses.push(new Ellipse((max_a-min_a)*Math.random() + min_a, (max_b-min_b)*Math.random() + min_b, (max_c - min_c)*Math.random() + min_c, nx*Math.random(),ny*Math.random(),nz*Math.random()));
+   //all_ellipses.push(new Ellipse(10, 10, 6, 10+ 18*i,10+ 18*i,10+10*i));
+   console.log("ellipse", i, "position:", all_ellipses[i].x_pos, all_ellipses[i].y_pos, all_ellipses[i].z_pos, "Radius:", all_ellipses[i].a, all_ellipses[i].b, all_ellipses[i].c);
 }
 
 
@@ -277,10 +323,18 @@ for (let k = 0; k < nz; k++) {
 
          for (let e = 0; e < num_ellipses; e++) {
             let wt = get_weight(all_ellipses[e], i, j, k);
-            if (pext*wt > vox.pext) {
+            /*if (pext*wt > vox.pext) {
                vox.pext = pext*wt;
                vox.phum = phum*wt;
                vox.pact = pact*wt;
+            }*/
+            vox.pext += pext*wt;
+            vox.phum += phum*wt;
+            vox.pact += pact*wt;
+            if (vox.pext > pext) {
+               vox.pext = pext;
+               vox.phum = phum;
+               vox.pact = pact;
             }
          }
 

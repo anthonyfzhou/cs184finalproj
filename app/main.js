@@ -5,19 +5,46 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
+// renderer.setClearColor( 0x87ceeb );
+
+var lightsource = new THREE.DirectionalLight(0xFFFFFF, 10);
+    lightsource.position.x = 6;
+    lightsource.position.y = 6;
+    lightsource.position.z = 6;
+    lightsource.castShadow = true;
+    scene.add(lightsource);
+
+
+
 
 const box_geo = new THREE.BoxGeometry(.1, .1, .1);
-const material = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
+const material = new THREE.MeshLambertMaterial({color: 0xd3d3d3});
 var cloud_parts = [];
 
-const nx = 70;
+const nx = 100;
 const ny = 70;
-const nz = 30;
+const nz = 50;
 										   
 var pext = 0.9;//.5;
 var phum = 0.1;//.5;
 var pact = 0.001;//.5;
 
+
+
+camera.position.z = nz*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/2;
+camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
+camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
+
+camera.position.x = 5;
+camera.position.y = 5;
+camera.position.z = 5;
+
+scene.add(new THREE.AxesHelper(50));
+
+camera.lookAt(0,0,0);
+
+
+// The Voxel class we use as the particles for the 
 class Voxel {
    constructor(humid, activate, mat) {
       this.hum = humid;
@@ -80,22 +107,22 @@ const velocity = function(z) {
    //return Math.round(0.04*z);
 
    if (z >= 25) {
-      return Math.round(0.02* z);;
+      return -Math.round(0.01 * z);;
    }
 
    if (z >= 17) {   
-      return Math.round(0.02 * z);
+      return -Math.round(0.003 * z);
    }
 
    if (z >= 12) {   
-      return Math.round(0.02 * z);
+      return Math.round(0.002 * z);
    }
 
    if (z >= 9) {   
-      return Math.round(0.01 * z);
+      return Math.round(0.003 * z);
    }
 
-   return Math.round(0.01 * z);
+   return Math.round(0.001 * z);
 
 }
 
@@ -176,7 +203,7 @@ const update_voxel = function (i,j,k) {
 	} else {
 	   pt.part.material.opacity = 0.05;
 	}*/
-   pt.part.material.opacity = 0.1*pt.density;
+   pt.part.material.opacity = 0.2*pt.density;
 }
 
 const update_all = function () {
@@ -240,7 +267,7 @@ for (let k = 0; k < nz; k++) {
       for (let i = 0; i < nx; i++) {
          hum = 0;
          act = 0;
-         let mat = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
+         let mat = new THREE.MeshLambertMaterial({color: 0xd3d3d3});
          // TOGGLE THIS FOR PRETTY COLORS!!:
          // mat.color = new THREE.Color(i/nx, j/ny, k/nz); 
          mat.transparent = true;
@@ -270,11 +297,7 @@ for (let i = 0; i < cloud_parts.length; i++) {
    scene.add(cloud_parts[i].part);
 }
 
-camera.position.z = nz*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/2;
-camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
-camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
 
-camera.lookAt(0,0,0);
 
 
 

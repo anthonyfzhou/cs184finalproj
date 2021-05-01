@@ -241,6 +241,8 @@ for (let k = 0; k < nz; k++) {
          hum = 0;
          act = 0;
          let mat = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
+         // TOGGLE THIS FOR PRETTY COLORS!!:
+         // mat.color = new THREE.Color(i/nx, j/ny, k/nz); 
          mat.transparent = true;
          let vox = new Voxel(hum, act, mat);
          vox.part.position.set(x_offset + 0.1*i, y_offset + 0.1*j, z_offset + 0.1*k);
@@ -282,4 +284,4 @@ const animate = function () {
    renderer.render( scene, camera );
 };
 
-setInterval(animate, 300);
+setInterval(animate, 500);

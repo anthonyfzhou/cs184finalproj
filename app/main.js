@@ -10,9 +10,9 @@ const box_geo = new THREE.BoxGeometry(.1, .1, .1);
 const material = new THREE.MeshBasicMaterial({color: 0xd3d3d3});
 var cloud_parts = [];
 
-const nx = 75;
-const ny = 50;
-const nz = 50;
+const nx = 70;
+const ny = 70;
+const nz = 30;
 										   
 var pext = 0.9;//.5;
 var phum = 0.1;//.5;
@@ -30,6 +30,7 @@ class Voxel {
       this.phum = 0;
       this.pext = 0;
       this.pact = 0;
+      this.density= 0;
    }
 }
 
@@ -76,25 +77,25 @@ const get_Voxel = function (i, j, k) {
 // Velocity function-- said to be piecewise-linear
 const velocity = function(z) {
 
-   return Math.round(0.04*z);
+   //return Math.round(0.04*z);
 
    if (z >= 25) {
-      return Math.round(0.5* z);;
+      return Math.round(0.02* z);;
    }
 
    if (z >= 17) {   
-      return Math.round(0.4 * z);
+      return Math.round(0.02 * z);
    }
 
    if (z >= 12) {   
-      return Math.round(0.3 * z);
+      return Math.round(0.02 * z);
    }
 
    if (z >= 9) {   
-      return Math.round(0.2 * z);
+      return Math.round(0.01 * z);
    }
 
-   return -Math.round(0.2 * z);
+   return Math.round(0.01 * z);
 
 }
 
@@ -147,17 +148,35 @@ const update_act = function (i, j, k) {
    get_Voxel(i,j,k).next_act = (!get_Voxel(i, j, k).act && get_Voxel(i,j,k).hum && f_act(i,j,k)) || (prob < get_Voxel(i,j,k).pact);
 }
 
-const update_voxel = function (pt) {
-	// pt.act = pt.next_act;
-	// pt.cld = pt.next_cld;
-	// pt.hum = pt.next_hum;
-	if (pt.cld == false) {
+const density_weight = function(i, j, k) {
+   let sum = 0;
+   let i0 = 3;
+   let j0 = 3;
+   let k0 = 3;
+   for (let iloop = -i0; iloop <= i0; iloop++) {
+      for (let jloop = -j0; jloop <= j0; jloop++) {
+         for (let kloop = -k0; kloop <= k0; kloop++) {
+            let pt = get_Voxel(i+iloop, j+jloop, k+kloop);
+            if (pt.cld == true) {
+               sum += 1;
+            }
+         }
+      }
+   }
+   sum = sum/((2*i0) + 1)/((2*j0) + 1)/((2*k0) + 1);
+   return sum;
+}
+
+
+const update_voxel = function (i,j,k) {
+   let pt = get_Voxel(i,j,k);
+	pt.density = density_weight(i, j, k);
+	/*if (pt.cld == false) {
 	   pt.part.material.opacity = 0;
 	} else {
-	   
 	   pt.part.material.opacity = 0.05;
-
-	}
+	}*/
+   pt.part.material.opacity = 0.1*pt.density;
 }
 
 const update_all = function () {
@@ -173,9 +192,12 @@ const update_all = function () {
          }
       }
    }
-   for (let i = 0; i < cloud_parts.length; i++) {
-     let pt = cloud_parts[i];
-	  update_voxel(pt);
+   for (let k = 0; k < nz; k++) {
+      for (let j = 0; j < ny; j++) {
+         for (let i = 0; i < nx; i++) {
+            update_voxel(i,j,k);
+         }
+      }
    }
 }
 
@@ -187,6 +209,7 @@ const get_weight = function(e, i, j, k) {
       return 0;
    }
 }
+
 
 
 
@@ -245,14 +268,17 @@ for (let i = 0; i < cloud_parts.length; i++) {
    scene.add(cloud_parts[i].part);
 }
 
-camera.position.z = nz/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/2;
+camera.position.z = nz*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/2;
 camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
 camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
+
 camera.lookAt(0,0,0);
+
+
 
 const animate = function () {
    update_all();
-
+   
    renderer.render( scene, camera );
 };
 

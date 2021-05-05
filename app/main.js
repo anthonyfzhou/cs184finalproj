@@ -8,7 +8,7 @@ document.body.appendChild( renderer.domElement );
 
 // renderer.setClearColor( 0x87ceeb );
 
-var lightsource = new THREE.DirectionalLight(0xFFFFFF, 10);
+var lightsource = new THREE.DirectionalLight(0xFFFFFF, 2);
     lightsource.position.x = 6;
     lightsource.position.y = 6;
     lightsource.position.z = 6;
@@ -40,17 +40,19 @@ var pact = 0.001;//.5;
 
 
 
-camera.position.z = nz*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/2;
-camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
-camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/6;
+camera.position.z = nz*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/4;
+camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/12;
+camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/12;
 
-camera.position.x = 5;
-camera.position.y = 5;
-camera.position.z = 5;
+camera.position.x = 0;
+camera.position.y = 10;
+camera.position.z = 3;
 
 scene.add(new THREE.AxesHelper(50));
 
 camera.lookAt(0,0,0);
+
+
 
 
 // The Voxel class we use as the particles for the 
@@ -113,12 +115,14 @@ const get_Voxel = function (i, j, k) {
    return cloud_parts[(nx*ny*k) + (nx*j) + i];
 }
 
-
+const dark_grey = new THREE.Color(0x222222);
+const light_grey = new THREE.Color(0xd3d3d3);
 
 // Velocity function-- said to be piecewise-linear
 const velocity = function(z) {
 
-   //return Math.round(0.01*z);
+   return 0;
+   return Math.round(0.01*z);
 
    if (z >= 25) {
       return -Math.round(0.01 * z);;
@@ -238,7 +242,18 @@ const update_voxel = function (i,j,k) {
 	} else {
 	   pt.part.material.opacity = 0.05;
 	}*/
-   pt.part.material.opacity = 0.3*pt.density;
+   
+}
+
+const update_color = function (i, j, k) {
+   let pt = get_Voxel(i,j,k);
+   let block = 0;
+   for (let step = 0; step <= 20; step+=1) {
+      block += get_Voxel(i+step, j+step, k+step).density;
+   }
+   block = Math.sqrt(block/5);
+   pt.part.material.opacity = pt.density;
+   pt.part.material.color.lerpColors(dark_grey, light_grey, 1*block);
 }
 
 const update_all = function () {
@@ -259,6 +274,13 @@ const update_all = function () {
       for (let j = 0; j < ny; j++) {
          for (let i = 0; i < nx; i++) {
             update_voxel(i,j,k);
+         }
+      }
+   }
+   for (let k = 0; k < nz; k++) {
+      for (let j = 0; j < ny; j++) {
+         for (let i = 0; i < nx; i++) {
+            update_color(i,j,k);
          }
       }
    }
@@ -288,7 +310,7 @@ const x_offset = -0.1*nx/2;
 const y_offset = -0.1*ny/2;
 const z_offset = -0.1*nz/2;
 
-var num_ellipses = 1;
+var num_ellipses = 2;
 var all_ellipses = [];
 
 var min_a = nx/4;

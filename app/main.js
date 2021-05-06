@@ -1,5 +1,5 @@
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera( 25, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -8,7 +8,7 @@ document.body.appendChild( renderer.domElement );
 
 // renderer.setClearColor( 0x87ceeb );
 
-var lightsource = new THREE.DirectionalLight(0xFFFFFF, 2);
+var lightsource = new THREE.DirectionalLight(0xFFFFFF, 2.5);
     lightsource.position.x = 6;
     lightsource.position.y = 6;
     lightsource.position.z = 6;
@@ -32,23 +32,24 @@ var cloud_parts = [];
 
 const nx = 70;
 const ny = 45;
-const nz = 70;
+const nz = 90;
 										   
 var pext = 0.3;//.5;
 var phum = 0.75;//.5;
-var pact = 0.54;//.5;
+var pact = 0.4;//.5;
 
-
+const dark_grey = new THREE.Color(0x444444);
+const light_grey = new THREE.Color(0xd3d3d3);
 
 camera.position.z = nz*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/4;
 camera.position.x = nx/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/12;
 camera.position.y = ny/2*ny/2/Math.sqrt(((nx/2)*(nx/2)) + ((ny/2)*(ny/2)) + ((nz/2)*(nz/2)))/12;
 
-camera.position.x = 10;
-camera.position.y = 10;
-camera.position.z = 10;
+camera.position.x = 12;
+camera.position.y = 8;
+camera.position.z = 4;
 
-scene.add(new THREE.AxesHelper(50));
+// scene.add(new THREE.AxesHelper(50));
 
 camera.lookAt(0,0,0);
 
@@ -115,8 +116,7 @@ const get_Voxel = function (i, j, k) {
    return cloud_parts[(nx*ny*k) + (nx*j) + i];
 }
 
-const dark_grey = new THREE.Color(0xd3d3d3);
-const light_grey = new THREE.Color(0xd3d3d3);
+
 
 // Velocity function-- said to be piecewise-linear
 const velocity = function(z) {
@@ -384,4 +384,4 @@ const animate = function () {
    renderer.render( scene, camera );
 };
 
-setInterval(animate, 500);
+setInterval(animate, 100);

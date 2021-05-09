@@ -163,6 +163,17 @@
       </iframe>
     </div>
 
+    <h2 align="center">Problems Encountered and Lessons Learned</h2>
+    <div class="content" align="center">
+      We had some trouble adding texture to the cloud and producing shadows. Originally, we tried playing around with the shadow properties of objects in 3JS, but this made the cloud appear almost entirely in shadow since the renderer treated each cloud particle as a solid cube. We eventually pivoted to the ray marching technique discussed earlier.
+    </div>
+    <div class="content" align="center">
+      After we implemented advection, we noticed that it was extremely obvious when a cloud moved out of the voxel space. Making the voxel space larger would make our simulation slower and zooming in on the voxel space would make rendering artifacts more apparent. We tried to implement smaller voxel spaces defined around each ellipsoid, so we could see clouds drift off screen, but we were unable to debug the implementation. We ended up zooming in on the voxel space when creating our GIFs.
+    </div>
+    <div class="content" align="center">
+      Overall, we learned how to use 3JS to render objects and how we can approximate physical equations with much simpler models. We got to tune model parameters and implement different weighting functions to alter our final renders and create varied clouds.  
+    </div>
+
     <h2 align="center">References</h2>
     <div class="content" align="center">
       Dobashi, Yoshinori, et al. "A simple, efficient method for realistic animation of clouds." Proceedings of the 27th annual conference on Computer graphics and interactive techniques. 2000.

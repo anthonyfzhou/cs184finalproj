@@ -123,6 +123,11 @@
       We chose to implement a variation of the ray marching technique recommended by the Häggström paper. For each voxel, we approximated the light reaching it by tracing a path from the voxel to the light source and accumulating the density at the first twenty voxels along this path. We then bias this to get a value that we use to linearly interpolate between light and dark grey colors. We note that our approximation is biased since we only take into account the first twenty steps, though in our simulation, this provides us with the color gradient that we desire, as most clouds do not have semi-axes  larger than twenty voxels. Through experimentation, we also biased towards a darker color, as this tended to provide more realism.
     </div>
 
+    <div class="content" align="center">
+      <img src="./images/color_lerp.gif" align="center">
+      <figcaption>This is an exaggerated example of the color lerping, with red and blue indicating the darker and lighter areas of the cloud.</figcaption>
+    </div>
+
     <h3 align="center"> Beautification </h3>
 
     <div class="content" align="center">
